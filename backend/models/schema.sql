@@ -92,9 +92,5 @@ CREATE INDEX IF NOT EXISTS idx_work_logs_technician ON work_logs(technician_id);
 CREATE INDEX IF NOT EXISTS idx_billing_ticket ON billing(ticket_id);
 CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
 
--- Modify work_logs column to store base64 images (if table already exists)
-DO $$ BEGIN
-  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'work_logs') THEN
-    ALTER TABLE work_logs ALTER COLUMN serial_photo_path TYPE TEXT;
-  END IF;
-END $$;
+-- Modify work_logs column to store base64 images
+ALTER TABLE IF EXISTS work_logs ALTER COLUMN serial_photo_path TYPE TEXT;
