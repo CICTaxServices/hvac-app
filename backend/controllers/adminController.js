@@ -167,6 +167,85 @@ exports.deleteTicket = async (req, res) => {
   }
 };
 
+// Get pending invoices (verified tickets awaiting billing)
+exports.getPendingInvoices = async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT t.*, pa.id as price_assignment_id, pa.price, pa.notes, b.id as billing_id, b.billing_status
+       FROM tickets t
+       LEFT JOIN price_assignments pa ON t.id = pa.ticket_id
+       LEFT JOIN billing b ON pa.id = b.price_assignment_id
+       WHERE t.status = $1
+       ORDER BY t.updated_at DESC`,
+      ['verified']
+    );
+
+    res.json({ invoices: result.rows });
+  } catch (error) {
+    console.error('Get pending invoices error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+// Update billing status and ticket status
+exports.updateBillingStatus = async (req, res) => {
+  try {
+    const { billing_id, billing_status, invoice_number } = req.body;
+
+    if (!billing_id || !billing_status) {
+      return res.status(400).json({ error: 'Billing ID and status required' });
+    }
+
+    // Get the billing record and its ticket
+    const billingResult = await pool.query(
+      'SELECT * FROM billing WHERE id = $1',
+      [billing_id]
+    );
+
+    if (billingResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Billing record not found' });
+    }
+
+    const billing = billingResult.rows[0];
+    const ticket_id = billing.ticket_id;
+
+    // Update billing status
+    const updateData = [billing_status, invoice_number || null, billing_id];
+    const updateBillingQuery = `
+      UPDATE billing
+      SET billing_status = $1, invoice_number = $2, billing_date = NOW()
+      WHERE id = $3
+      RETURNING *
+    `;
+    const billingUpdateResult = await pool.query(updateBillingQuery, updateData);
+
+    // If billing_status is 'sent' or 'paid', update ticket status to 'invoiced'
+    if (billing_status === 'sent' || billing_status === 'paid') {
+      await pool.query(
+        'UPDATE tickets SET status = $1, updated_at = NOW() WHERE id = $2',
+        ['invoiced', ticket_id]
+      );
+    }
+
+    // Log activity
+    await logActivity(
+      pool,
+      req.user.id,
+      ticket_id,
+      'Billing Updated',
+      `Status: ${billing_status}, Invoice: ${invoice_number || 'N/A'}`
+    );
+
+    res.json({
+      message: 'Billing status updated successfully',
+      billing: billingUpdateResult.rows[0],
+    });
+  } catch (error) {
+    console.error('Update billing status error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
 // Get dashboard stats
 exports.getDashboardStats = async (req, res) => {
   try {

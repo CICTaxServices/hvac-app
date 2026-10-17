@@ -23,6 +23,12 @@ router.put('/users/:id/deactivate', adminController.deactivateUser);
 // Delete ticket
 router.delete('/tickets/:id', adminController.deleteTicket);
 
+// Get pending invoices (verified tickets)
+router.get('/pending-invoices', adminController.getPendingInvoices);
+
+// Update billing status
+router.put('/billing/:id/status', adminController.updateBillingStatus);
+
 // Get dashboard stats
 router.get('/stats', adminController.getDashboardStats);
 
