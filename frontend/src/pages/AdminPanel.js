@@ -25,6 +25,7 @@ function AdminPanel({ user, onLogout }) {
   const [allUsers, setAllUsers] = useState([]);
   const [billingStatus, setBillingStatus] = useState({});
   const [invoiceNumber, setInvoiceNumber] = useState({});
+  const [verifyingTicket, setVerifyingTicket] = useState(null);
 
   const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
   const token = localStorage.getItem('token');
@@ -232,21 +233,6 @@ function AdminPanel({ user, onLogout }) {
             Tickets
           </button>
           <button
-            onClick={() => setActiveTab('verification')}
-            style={{
-              padding: '1rem',
-              marginRight: '1rem',
-              borderBottom: activeTab === 'verification' ? '3px solid #2563eb' : 'none',
-              backgroundColor: 'transparent',
-              border: 'none',
-              cursor: 'pointer',
-              fontWeight: activeTab === 'verification' ? 'bold' : 'normal',
-              color: activeTab === 'verification' ? '#2563eb' : '#666',
-            }}
-          >
-            Verification
-          </button>
-          <button
             onClick={() => setActiveTab('technicians')}
             style={{
               padding: '1rem',
@@ -442,6 +428,15 @@ function AdminPanel({ user, onLogout }) {
                               >
                                 View
                               </button>
+                              {ticket.status === 'completed' && (
+                                <button
+                                  className="btn btn-success"
+                                  onClick={() => setVerifyingTicket(ticket.id)}
+                                  style={{ marginRight: '0.5rem' }}
+                                >
+                                  Verify
+                                </button>
+                              )}
                               <button
                                 className="btn btn-danger"
                                 onClick={() => handleDeleteTicket(ticket.id)}
@@ -455,10 +450,97 @@ function AdminPanel({ user, onLogout }) {
                     </table>
                   )}
                 </div>
+
+                {/* Verification Modal */}
+                {verifyingTicket && (
+                  <div
+                    style={{
+                      position: 'fixed',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      zIndex: 1000,
+                    }}
+                    onClick={() => setVerifyingTicket(null)}
+                  >
+                    <div
+                      className="card"
+                      style={{
+                        maxWidth: '500px',
+                        width: '90%',
+                        backgroundColor: 'white',
+                      }}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <h2>Verify Work & Assign Price</h2>
+                      {(() => {
+                        const ticket = tickets.find((t) => t.id === verifyingTicket);
+                        return ticket ? (
+                          <div>
+                            <p>
+                              <strong>Ticket:</strong> {ticket.ticket_number}
+                            </p>
+                            <p>
+                              <strong>Customer:</strong> {ticket.customer_name}
+                            </p>
+                            <div className="form-group">
+                              <label>Price *</label>
+                              <input
+                                type="number"
+                                step="0.01"
+                                placeholder="0.00"
+                                value={priceAssignment[ticket.id] || ''}
+                                onChange={(e) =>
+                                  setPriceAssignment({
+                                    ...priceAssignment,
+                                    [ticket.id]: e.target.value,
+                                  })
+                                }
+                                autoFocus
+                              />
+                            </div>
+                            <div className="form-group">
+                              <label>Notes (Optional)</label>
+                              <textarea placeholder="Add any notes..." />
+                            </div>
+                            <div
+                              style={{
+                                display: 'flex',
+                                gap: '0.5rem',
+                                justifyContent: 'flex-end',
+                              }}
+                            >
+                              <button
+                                className="btn btn-secondary"
+                                onClick={() => setVerifyingTicket(null)}
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                className="btn btn-success"
+                                onClick={() => {
+                                  handleAssignPrice(ticket.id, ticket.work_log_id);
+                                  setVerifyingTicket(null);
+                                }}
+                              >
+                                Verify & Assign Price
+                              </button>
+                            </div>
+                          </div>
+                        ) : null;
+                      })()}
+                    </div>
+                  </div>
+                )}
               </>
             )}
 
-            {/* Verification Tab */}
+            {/* Verification Tab - HIDDEN */}
             {activeTab === 'verification' && (
               <div className="card">
                 <h2>Pending Work Verification</h2>
