@@ -37,8 +37,13 @@ function AdminPanel({ user, onLogout }) {
       const headers = { Authorization: `Bearer ${token}` };
 
       if (activeTab === 'tickets') {
-        const response = await axios.get(`${API_URL}/tickets`, { headers });
-        setTickets(response.data.tickets);
+        // Fetch both tickets and technicians for the dropdown
+        const [ticketsRes, usersRes] = await Promise.all([
+          axios.get(`${API_URL}/tickets`, { headers }),
+          axios.get(`${API_URL}/admin/users`, { headers }),
+        ]);
+        setTickets(ticketsRes.data.tickets);
+        setTechnicians(usersRes.data.users.filter((u) => u.role === 'technician'));
       } else if (activeTab === 'verification') {
         const response = await axios.get(`${API_URL}/admin/pending-verification`, { headers });
         setPendingVerification(response.data.tickets);
