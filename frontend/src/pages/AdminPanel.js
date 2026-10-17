@@ -4,7 +4,9 @@ import axios from 'axios';
 
 function AdminPanel({ user, onLogout }) {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('tickets');
+  // Set default tab based on user role
+  const defaultTab = user.role === 'accounting' ? 'invoicing' : 'tickets';
+  const [activeTab, setActiveTab] = useState(defaultTab);
   const [tickets, setTickets] = useState([]);
   const [pendingVerification, setPendingVerification] = useState([]);
   const [technicians, setTechnicians] = useState([]);
@@ -55,30 +57,33 @@ function AdminPanel({ user, onLogout }) {
     try {
       const headers = { Authorization: `Bearer ${token}` };
 
-      if (activeTab === 'tickets') {
-        // Fetch both tickets and technicians for the dropdown
-        const [ticketsRes, usersRes] = await Promise.all([
-          axios.get(`${API_URL}/tickets`, { headers }),
-          axios.get(`${API_URL}/admin/users`, { headers }),
-        ]);
-        // Filter out verified tickets
-        setTickets(ticketsRes.data.tickets.filter((t) => t.status !== 'verified' && t.status !== 'invoiced'));
-        setTechnicians(usersRes.data.users.filter((u) => u.role === 'technician'));
-      } else if (activeTab === 'verification') {
-        const response = await axios.get(`${API_URL}/admin/pending-verification`, { headers });
-        setPendingVerification(response.data.tickets);
-      } else if (activeTab === 'invoicing') {
-        const response = await axios.get(`${API_URL}/admin/pending-invoices`, { headers });
-        setPendingInvoices(response.data.invoices);
-      } else if (activeTab === 'users') {
-        const response = await axios.get(`${API_URL}/admin/users`, { headers });
-        setAllUsers(response.data.users);
-      } else if (activeTab === 'technicians') {
-        const response = await axios.get(`${API_URL}/admin/users`, { headers });
-        setTechnicians(response.data.users.filter((u) => u.role === 'technician'));
-      } else if (activeTab === 'stats') {
-        const response = await axios.get(`${API_URL}/admin/stats`, { headers });
-        setStats(response.data.stats);
+      // Accounting users only see invoicing tab
+      if (user.role === 'accounting') {
+        if (activeTab === 'invoicing') {
+          const response = await axios.get(`${API_URL}/admin/pending-invoices`, { headers });
+          setPendingInvoices(response.data.invoices);
+        }
+      } else if (user.role === 'admin') {
+        // Admin can see all tabs
+        if (activeTab === 'tickets') {
+          // Fetch both tickets and technicians for the dropdown
+          const [ticketsRes, usersRes] = await Promise.all([
+            axios.get(`${API_URL}/tickets`, { headers }),
+            axios.get(`${API_URL}/admin/users`, { headers }),
+          ]);
+          // Filter out verified tickets
+          setTickets(ticketsRes.data.tickets.filter((t) => t.status !== 'verified' && t.status !== 'invoiced'));
+          setTechnicians(usersRes.data.users.filter((u) => u.role === 'technician'));
+        } else if (activeTab === 'invoicing') {
+          const response = await axios.get(`${API_URL}/admin/pending-invoices`, { headers });
+          setPendingInvoices(response.data.invoices);
+        } else if (activeTab === 'users') {
+          const response = await axios.get(`${API_URL}/admin/users`, { headers });
+          setAllUsers(response.data.users);
+        } else if (activeTab === 'stats') {
+          const response = await axios.get(`${API_URL}/admin/stats`, { headers });
+          setStats(response.data.stats);
+        }
       }
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to fetch data');
@@ -287,21 +292,23 @@ function AdminPanel({ user, onLogout }) {
 
         {/* Tabs */}
         <div style={{ marginBottom: '2rem', borderBottom: '1px solid #ccc' }}>
-          <button
-            onClick={() => setActiveTab('tickets')}
-            style={{
-              padding: '1rem',
-              marginRight: '1rem',
-              borderBottom: activeTab === 'tickets' ? '3px solid #2563eb' : 'none',
-              backgroundColor: 'transparent',
-              border: 'none',
-              cursor: 'pointer',
-              fontWeight: activeTab === 'tickets' ? 'bold' : 'normal',
-              color: activeTab === 'tickets' ? '#2563eb' : '#666',
-            }}
-          >
-            Tickets
-          </button>
+          {user.role === 'admin' && (
+            <button
+              onClick={() => setActiveTab('tickets')}
+              style={{
+                padding: '1rem',
+                marginRight: '1rem',
+                borderBottom: activeTab === 'tickets' ? '3px solid #2563eb' : 'none',
+                backgroundColor: 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                fontWeight: activeTab === 'tickets' ? 'bold' : 'normal',
+                color: activeTab === 'tickets' ? '#2563eb' : '#666',
+              }}
+            >
+              Tickets
+            </button>
+          )}
           <button
             onClick={() => setActiveTab('invoicing')}
             style={{
