@@ -26,6 +26,20 @@ function AdminPanel({ user, onLogout }) {
   const [billingStatus, setBillingStatus] = useState({});
   const [invoiceNumber, setInvoiceNumber] = useState({});
   const [verifyingTicket, setVerifyingTicket] = useState(null);
+  const [showNewUserForm, setShowNewUserForm] = useState(false);
+  const [editingUser, setEditingUser] = useState(null);
+  const [newUser, setNewUser] = useState({
+    email: '',
+    password: '',
+    name: '',
+    role: 'technician',
+    phone: '',
+  });
+  const [editUser, setEditUser] = useState({
+    name: '',
+    phone: '',
+    role: '',
+  });
 
   const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
   const token = localStorage.getItem('token');
@@ -192,6 +206,62 @@ function AdminPanel({ user, onLogout }) {
     }
   };
 
+  const handleCreateUser = async (e) => {
+    e.preventDefault();
+    if (!newUser.email || !newUser.password || !newUser.name) {
+      setError('Email, password, and name are required');
+      return;
+    }
+
+    try {
+      const headers = { Authorization: `Bearer ${token}` };
+      await axios.post(`${API_URL}/auth/register`, newUser, { headers });
+
+      setNewUser({
+        email: '',
+        password: '',
+        name: '',
+        role: 'technician',
+        phone: '',
+      });
+      setShowNewUserForm(false);
+      fetchData();
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to create user');
+    }
+  };
+
+  const handleEditUser = async (userId) => {
+    try {
+      const headers = { Authorization: `Bearer ${token}` };
+      await axios.put(
+        `${API_URL}/admin/users/${userId}`,
+        editUser,
+        { headers }
+      );
+
+      setEditingUser(null);
+      fetchData();
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to update user');
+    }
+  };
+
+  const handleDeleteUser = async (userId) => {
+    if (!window.confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      const headers = { Authorization: `Bearer ${token}` };
+      await axios.delete(`${API_URL}/admin/users/${userId}`, { headers });
+
+      fetchData();
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to delete user');
+    }
+  };
+
   const Header = () => (
     <div className="header">
       <div className="container">
@@ -231,21 +301,6 @@ function AdminPanel({ user, onLogout }) {
             }}
           >
             Tickets
-          </button>
-          <button
-            onClick={() => setActiveTab('technicians')}
-            style={{
-              padding: '1rem',
-              marginRight: '1rem',
-              borderBottom: activeTab === 'technicians' ? '3px solid #2563eb' : 'none',
-              backgroundColor: 'transparent',
-              border: 'none',
-              cursor: 'pointer',
-              fontWeight: activeTab === 'technicians' ? 'bold' : 'normal',
-              color: activeTab === 'technicians' ? '#2563eb' : '#666',
-            }}
-          >
-            Technicians
           </button>
           <button
             onClick={() => setActiveTab('invoicing')}
@@ -591,42 +646,6 @@ function AdminPanel({ user, onLogout }) {
               </div>
             )}
 
-            {/* Technicians Tab */}
-            {activeTab === 'technicians' && (
-              <div className="card">
-                <h2>Technicians</h2>
-                {technicians.length === 0 ? (
-                  <p>No technicians found</p>
-                ) : (
-                  <table className="table">
-                    <thead>
-                      <tr>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Phone</th>
-                        <th>Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {technicians.map((tech) => (
-                        <tr key={tech.id}>
-                          <td>{tech.name}</td>
-                          <td>{tech.email}</td>
-                          <td>{tech.phone}</td>
-                          <td>
-                            {tech.is_active ? (
-                              <span className="badge badge-verified">Active</span>
-                            ) : (
-                              <span className="badge badge-billed">Inactive</span>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                )}
-              </div>
-            )}
 
             {/* Invoicing Tab */}
             {activeTab === 'invoicing' && (
@@ -705,54 +724,210 @@ function AdminPanel({ user, onLogout }) {
 
             {/* Users Tab */}
             {activeTab === 'users' && (
-              <div className="card">
-                <h2>User Management</h2>
-                {allUsers.length === 0 ? (
-                  <p>No users found</p>
-                ) : (
-                  <table className="table">
-                    <thead>
-                      <tr>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Role</th>
-                        <th>Phone</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {allUsers.map((u) => (
-                        <tr key={u.id}>
-                          <td>{u.name}</td>
-                          <td>{u.email}</td>
-                          <td>
-                            <span style={{ textTransform: 'capitalize' }}>{u.role}</span>
-                          </td>
-                          <td>{u.phone}</td>
-                          <td>
-                            {u.is_active ? (
-                              <span className="badge badge-verified">Active</span>
-                            ) : (
-                              <span className="badge badge-billed">Suspended</span>
-                            )}
-                          </td>
-                          <td>
-                            {u.is_active && (
+              <>
+                <div className="card">
+                  <h2>User Management</h2>
+                  <button
+                    className="btn btn-primary"
+                    onClick={() => setShowNewUserForm(!showNewUserForm)}
+                    style={{ marginBottom: '1rem' }}
+                  >
+                    {showNewUserForm ? 'Cancel' : '+ Create New User'}
+                  </button>
+
+                  {showNewUserForm && (
+                    <div className="card" style={{ backgroundColor: '#f9fafb', marginBottom: '1rem' }}>
+                      <h3>Create New User</h3>
+                      <form onSubmit={handleCreateUser}>
+                        <div className="grid grid-2">
+                          <div className="form-group">
+                            <label>Name *</label>
+                            <input
+                              type="text"
+                              value={newUser.name}
+                              onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
+                              required
+                            />
+                          </div>
+                          <div className="form-group">
+                            <label>Email *</label>
+                            <input
+                              type="email"
+                              value={newUser.email}
+                              onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+                              required
+                            />
+                          </div>
+                          <div className="form-group">
+                            <label>Password *</label>
+                            <input
+                              type="password"
+                              value={newUser.password}
+                              onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
+                              required
+                            />
+                          </div>
+                          <div className="form-group">
+                            <label>Phone</label>
+                            <input
+                              type="tel"
+                              value={newUser.phone}
+                              onChange={(e) => setNewUser({ ...newUser, phone: e.target.value })}
+                            />
+                          </div>
+                          <div className="form-group">
+                            <label>Role *</label>
+                            <select
+                              value={newUser.role}
+                              onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
+                            >
+                              <option value="technician">Technician</option>
+                              <option value="admin">Admin</option>
+                              <option value="accounting">Accounting</option>
+                            </select>
+                          </div>
+                        </div>
+                        <button type="submit" className="btn btn-success">
+                          Create User
+                        </button>
+                      </form>
+                    </div>
+                  )}
+
+                  {allUsers.length === 0 ? (
+                    <p>No users found</p>
+                  ) : (
+                    <table className="table">
+                      <thead>
+                        <tr>
+                          <th>Name</th>
+                          <th>Email</th>
+                          <th>Role</th>
+                          <th>Phone</th>
+                          <th>Status</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {allUsers.map((u) => (
+                          <tr key={u.id}>
+                            <td>{u.name}</td>
+                            <td>{u.email}</td>
+                            <td>
+                              <span style={{ textTransform: 'capitalize' }}>{u.role}</span>
+                            </td>
+                            <td>{u.phone}</td>
+                            <td>
+                              {u.is_active ? (
+                                <span className="badge badge-verified">Active</span>
+                              ) : (
+                                <span className="badge badge-billed">Suspended</span>
+                              )}
+                            </td>
+                            <td style={{ whiteSpace: 'nowrap' }}>
+                              <button
+                                className="btn btn-primary"
+                                onClick={() => {
+                                  setEditingUser(u.id);
+                                  setEditUser({ name: u.name, phone: u.phone, role: u.role });
+                                }}
+                                style={{ marginRight: '0.25rem', padding: '0.4rem 0.6rem', fontSize: '0.85rem' }}
+                              >
+                                Edit
+                              </button>
+                              {u.is_active && (
+                                <button
+                                  className="btn btn-warning"
+                                  onClick={() => handleDeactivateUser(u.id)}
+                                  style={{ marginRight: '0.25rem', padding: '0.4rem 0.6rem', fontSize: '0.85rem' }}
+                                >
+                                  Suspend
+                                </button>
+                              )}
                               <button
                                 className="btn btn-danger"
-                                onClick={() => handleDeactivateUser(u.id)}
+                                onClick={() => handleDeleteUser(u.id)}
+                                style={{ padding: '0.4rem 0.6rem', fontSize: '0.85rem' }}
                               >
-                                Suspend
+                                Delete
                               </button>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
+
+                {editingUser && (
+                  <div
+                    style={{
+                      position: 'fixed',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      zIndex: 1000,
+                    }}
+                    onClick={() => setEditingUser(null)}
+                  >
+                    <div
+                      className="card"
+                      style={{ maxWidth: '400px', width: '90%', backgroundColor: 'white' }}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <h2>Edit User</h2>
+                      <div className="form-group">
+                        <label>Name</label>
+                        <input
+                          type="text"
+                          value={editUser.name}
+                          onChange={(e) => setEditUser({ ...editUser, name: e.target.value })}
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label>Phone</label>
+                        <input
+                          type="tel"
+                          value={editUser.phone}
+                          onChange={(e) => setEditUser({ ...editUser, phone: e.target.value })}
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label>Role</label>
+                        <select
+                          value={editUser.role}
+                          onChange={(e) => setEditUser({ ...editUser, role: e.target.value })}
+                        >
+                          <option value="technician">Technician</option>
+                          <option value="admin">Admin</option>
+                          <option value="accounting">Accounting</option>
+                        </select>
+                      </div>
+                      <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                        <button
+                          className="btn btn-secondary"
+                          onClick={() => setEditingUser(null)}
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          className="btn btn-primary"
+                          onClick={() => {
+                            handleEditUser(editingUser);
+                          }}
+                        >
+                          Save Changes
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 )}
-              </div>
+              </>
             )}
 
             {/* Stats Tab */}

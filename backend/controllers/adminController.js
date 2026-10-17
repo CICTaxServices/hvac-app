@@ -131,6 +131,75 @@ exports.deactivateUser = async (req, res) => {
   }
 };
 
+// Update user
+exports.updateUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, phone, role } = req.body;
+
+    if (!name && !phone && !role) {
+      return res.status(400).json({ error: 'At least one field must be provided' });
+    }
+
+    let query = 'UPDATE users SET ';
+    const params = [];
+    const updates = [];
+
+    if (name) {
+      updates.push('name = $' + (params.length + 1));
+      params.push(name);
+    }
+    if (phone !== undefined) {
+      updates.push('phone = $' + (params.length + 1));
+      params.push(phone || null);
+    }
+    if (role) {
+      updates.push('role = $' + (params.length + 1));
+      params.push(role);
+    }
+
+    updates.push('updated_at = NOW()');
+    query += updates.join(', ');
+    query += ' WHERE id = $' + (params.length + 1);
+    params.push(id);
+    query += ' RETURNING id, email, name, role, phone, is_active';
+
+    const result = await pool.query(query, params);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json({ message: 'User updated', user: result.rows[0] });
+  } catch (error) {
+    console.error('Update user error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+// Delete user
+exports.deleteUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Prevent deleting yourself
+    if (id == req.user.id) {
+      return res.status(400).json({ error: 'Cannot delete your own account' });
+    }
+
+    const result = await pool.query('DELETE FROM users WHERE id = $1 RETURNING *', [id]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json({ message: 'User deleted', user: result.rows[0] });
+  } catch (error) {
+    console.error('Delete user error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
 // Delete ticket
 exports.deleteTicket = async (req, res) => {
   try {

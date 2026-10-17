@@ -20,6 +20,12 @@ router.get('/users', adminController.getAllUsers);
 // Deactivate user
 router.put('/users/:id/deactivate', adminController.deactivateUser);
 
+// Update user
+router.put('/users/:id', adminController.updateUser);
+
+// Delete user
+router.delete('/users/:id', adminController.deleteUser);
+
 // Delete ticket
 router.delete('/tickets/:id', adminController.deleteTicket);
 
