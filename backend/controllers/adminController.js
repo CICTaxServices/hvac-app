@@ -100,7 +100,7 @@ exports.getPendingVerification = async (req, res) => {
 exports.getAllUsers = async (req, res) => {
   try {
     const result = await pool.query(
-      'SELECT id, email, name, role, phone, is_active FROM users ORDER BY created_at DESC'
+      'SELECT id, email, name, role, phone, is_active FROM users WHERE is_active = true ORDER BY created_at DESC'
     );
 
     res.json({ users: result.rows });
@@ -127,6 +127,42 @@ exports.deactivateUser = async (req, res) => {
     res.json({ message: 'User deactivated', user: result.rows[0] });
   } catch (error) {
     console.error('Deactivate user error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+// Delete ticket
+exports.deleteTicket = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Verify ticket exists
+    const ticketResult = await pool.query('SELECT * FROM tickets WHERE id = $1', [id]);
+    if (ticketResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Ticket not found' });
+    }
+
+    // Delete related records first (cascade)
+    await pool.query('DELETE FROM activity_logs WHERE ticket_id = $1', [id]);
+    await pool.query('DELETE FROM billing WHERE ticket_id = $1', [id]);
+    await pool.query('DELETE FROM price_assignments WHERE ticket_id = $1', [id]);
+    await pool.query('DELETE FROM work_logs WHERE ticket_id = $1', [id]);
+
+    // Delete the ticket
+    const result = await pool.query('DELETE FROM tickets WHERE id = $1 RETURNING *', [id]);
+
+    // Log activity
+    await logActivity(
+      pool,
+      req.user.id,
+      id,
+      'Ticket Deleted',
+      `Ticket: ${result.rows[0].ticket_number}`
+    );
+
+    res.json({ message: 'Ticket deleted successfully', ticket: result.rows[0] });
+  } catch (error) {
+    console.error('Delete ticket error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };

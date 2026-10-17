@@ -20,6 +20,9 @@ router.get('/users', adminController.getAllUsers);
 // Deactivate user
 router.put('/users/:id/deactivate', adminController.deactivateUser);
 
+// Delete ticket
+router.delete('/tickets/:id', adminController.deleteTicket);
+
 // Get dashboard stats
 router.get('/stats', adminController.getDashboardStats);
 

@@ -122,6 +122,21 @@ function AdminPanel({ user, onLogout }) {
     }
   };
 
+  const handleDeleteTicket = async (ticketId) => {
+    if (!window.confirm('Are you sure you want to delete this ticket? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      const headers = { Authorization: `Bearer ${token}` };
+      await axios.delete(`${API_URL}/admin/tickets/${ticketId}`, { headers });
+
+      fetchData();
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to delete ticket');
+    }
+  };
+
   const Header = () => (
     <div className="header">
       <div className="container">
@@ -339,8 +354,15 @@ function AdminPanel({ user, onLogout }) {
                               <button
                                 className="btn btn-primary"
                                 onClick={() => navigate(`/ticket/${ticket.id}`)}
+                                style={{ marginRight: '0.5rem' }}
                               >
                                 View
+                              </button>
+                              <button
+                                className="btn btn-danger"
+                                onClick={() => handleDeleteTicket(ticket.id)}
+                              >
+                                Delete
                               </button>
                             </td>
                           </tr>
