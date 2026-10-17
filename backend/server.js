@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
+const pool = require('./config/database');
 
 const authRoutes = require('./routes/auth');
 const ticketRoutes = require('./routes/tickets');
@@ -10,6 +11,32 @@ const technicianRoutes = require('./routes/technicians');
 const adminRoutes = require('./routes/admin');
 
 const app = express();
+
+// Initialize database schema on startup
+const initializeDatabase = async () => {
+  try {
+    console.log('Initializing database schema...');
+    const schemaPath = path.join(__dirname, 'models', 'schema.sql');
+    const schema = fs.readFileSync(schemaPath, 'utf8');
+
+    // Split SQL into individual statements and execute
+    const statements = schema.split(';').filter(stmt => stmt.trim());
+
+    for (const statement of statements) {
+      if (statement.trim()) {
+        await pool.query(statement);
+      }
+    }
+
+    console.log('✅ Database schema initialized successfully');
+  } catch (error) {
+    console.error('⚠️ Database initialization warning:', error.message);
+    // Don't fail startup if schema already exists
+  }
+};
+
+// Initialize database before starting server
+initializeDatabase();
 
 // Middleware
 app.use(cors({
