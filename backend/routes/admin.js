@@ -4,36 +4,22 @@ const { authMiddleware, authorize } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
-// All routes require authentication and admin role
+// All routes require authentication
 router.use(authMiddleware);
-router.use(authorize(['admin']));
 
-// Assign price to completed work
-router.post('/price-assignment', adminController.assignPrice);
+// Routes that require admin role only
+router.post('/price-assignment', authorize(['admin']), adminController.assignPrice);
+router.get('/pending-verification', authorize(['admin']), adminController.getPendingVerification);
+router.get('/users', authorize(['admin']), adminController.getAllUsers);
+router.put('/users/:id/deactivate', authorize(['admin']), adminController.deactivateUser);
+router.put('/users/:id', authorize(['admin']), adminController.updateUser);
+router.delete('/users/:id', authorize(['admin']), adminController.deleteUser);
+router.delete('/tickets/:id', authorize(['admin']), adminController.deleteTicket);
+router.get('/stats', authorize(['admin']), adminController.getDashboardStats);
 
-// Get pending verification
-router.get('/pending-verification', adminController.getPendingVerification);
-
-// Get all users
-router.get('/users', adminController.getAllUsers);
-
-// Deactivate user
-router.put('/users/:id/deactivate', adminController.deactivateUser);
-
-// Update user
-router.put('/users/:id', adminController.updateUser);
-
-// Delete user
-router.delete('/users/:id', adminController.deleteUser);
-
-// Delete ticket
-router.delete('/tickets/:id', adminController.deleteTicket);
-
-// Get pending invoices (verified tickets)
-router.get('/pending-invoices', adminController.getPendingInvoices);
-
-// Update billing status
-router.put('/billing/:id/status', adminController.updateBillingStatus);
+// Routes that allow both admin and accounting
+router.get('/pending-invoices', authorize(['admin', 'accounting']), adminController.getPendingInvoices);
+router.put('/billing/:id/status', authorize(['admin', 'accounting']), adminController.updateBillingStatus);
 
 // Get dashboard stats
 router.get('/stats', adminController.getDashboardStats);
