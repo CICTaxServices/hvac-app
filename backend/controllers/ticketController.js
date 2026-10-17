@@ -60,26 +60,29 @@ exports.createTicket = async (req, res) => {
 exports.getTickets = async (req, res) => {
   try {
     const { status, assigned_technician_id } = req.query;
-    let query = 'SELECT * FROM tickets WHERE 1=1';
+    let query = `SELECT t.*, w.id as work_log_id
+                 FROM tickets t
+                 LEFT JOIN work_logs w ON t.id = w.ticket_id
+                 WHERE 1=1`;
     const params = [];
 
     if (status) {
-      query += ' AND status = $' + (params.length + 1);
+      query += ' AND t.status = $' + (params.length + 1);
       params.push(status);
     }
 
     if (assigned_technician_id) {
-      query += ' AND assigned_technician_id = $' + (params.length + 1);
+      query += ' AND t.assigned_technician_id = $' + (params.length + 1);
       params.push(assigned_technician_id);
     }
 
     // Technicians only see their assigned tickets
     if (req.user.role === 'technician') {
-      query += ' AND assigned_technician_id = $' + (params.length + 1);
+      query += ' AND t.assigned_technician_id = $' + (params.length + 1);
       params.push(req.user.id);
     }
 
-    query += ' ORDER BY created_at DESC';
+    query += ' ORDER BY t.created_at DESC';
 
     const result = await pool.query(query, params);
     res.json({ tickets: result.rows });
