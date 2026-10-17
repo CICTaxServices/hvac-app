@@ -110,7 +110,7 @@ function TicketDetails({ user }) {
                         <p>
                           <strong>Serial Photo:</strong>{' '}
                           <a
-                            href={`${API_URL.replace('/api', '')}${log.serial_photo_path}`}
+                            href={`${API_URL.replace('/api', '')}/uploads/${log.serial_photo_path.split('/').pop()}`}
                             target="_blank"
                             rel="noopener noreferrer"
                           >
