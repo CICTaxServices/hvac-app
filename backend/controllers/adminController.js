@@ -171,12 +171,16 @@ exports.deleteTicket = async (req, res) => {
 exports.getPendingInvoices = async (req, res) => {
   try {
     const result = await pool.query(
-      `SELECT t.*, pa.id as price_assignment_id, pa.price, pa.notes, b.id as billing_id, b.billing_status
+      `SELECT DISTINCT ON (t.id)
+         t.id, t.ticket_number, t.customer_name, t.customer_email, t.customer_phone,
+         t.property_address, t.service_type, t.status, t.created_at, t.updated_at,
+         pa.id as price_assignment_id, pa.price, pa.notes,
+         b.id as billing_id, b.billing_status, b.invoice_number
        FROM tickets t
        LEFT JOIN price_assignments pa ON t.id = pa.ticket_id
        LEFT JOIN billing b ON pa.id = b.price_assignment_id
        WHERE t.status = $1
-       ORDER BY t.updated_at DESC`,
+       ORDER BY t.id, b.created_at DESC`,
       ['verified']
     );
 

@@ -76,10 +76,11 @@ exports.getTickets = async (req, res) => {
       params.push(assigned_technician_id);
     }
 
-    // Technicians only see their assigned tickets
+    // Technicians only see their assigned tickets that are pending or assigned (not completed/verified)
     if (req.user.role === 'technician') {
       query += ' AND t.assigned_technician_id = $' + (params.length + 1);
       params.push(req.user.id);
+      query += ' AND t.status IN (\'pending\', \'assigned\')';
     }
 
     query += ' ORDER BY t.created_at DESC';
