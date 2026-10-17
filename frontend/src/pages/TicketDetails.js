@@ -107,16 +107,28 @@ function TicketDetails({ user }) {
                         <strong>Completed:</strong> {new Date(log.completed_at).toLocaleString()}
                       </p>
                       {log.serial_photo_path && (
-                        <p>
-                          <strong>Serial Photo:</strong>{' '}
+                        <div style={{ marginTop: '1rem' }}>
+                          <strong>Serial Photo:</strong>
+                          <div style={{ marginTop: '0.5rem' }}>
+                            <img
+                              src={log.serial_photo_path}
+                              alt="Serial Number Photo"
+                              style={{
+                                maxWidth: '100%',
+                                maxHeight: '400px',
+                                borderRadius: '4px',
+                                border: '1px solid #ddd',
+                              }}
+                            />
+                          </div>
                           <a
                             href={log.serial_photo_path}
-                            target="_blank"
-                            rel="noopener noreferrer"
+                            download="serial-photo.jpg"
+                            style={{ marginTop: '0.5rem', display: 'inline-block' }}
                           >
-                            View Photo
+                            ⬇️ Download Photo
                           </a>
-                        </p>
+                        </div>
                       )}
                     </div>
                   ))}
