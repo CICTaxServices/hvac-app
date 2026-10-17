@@ -21,14 +21,22 @@ exports.submitWorkCompletion = async (req, res) => {
     const ticket = ticketResult.rows[0];
 
     // Convert uploaded file to base64
-    const fileBuffer = fs.readFileSync(req.file.path);
-    const base64String = fileBuffer.toString('base64');
+    let photoDataUrl;
+    try {
+      console.log('Reading file from:', req.file.path);
+      const fileBuffer = fs.readFileSync(req.file.path);
+      const base64String = fileBuffer.toString('base64');
 
-    // Determine MIME type
-    const mimeType = req.file.mimetype || 'image/jpeg';
+      // Determine MIME type
+      const mimeType = req.file.mimetype || 'image/jpeg';
 
-    // Store as data URL: data:image/jpeg;base64,...
-    const photoDataUrl = `data:${mimeType};base64,${base64String}`;
+      // Store as data URL: data:image/jpeg;base64,...
+      photoDataUrl = `data:${mimeType};base64,${base64String}`;
+      console.log('Successfully converted file to base64, size:', base64String.length);
+    } catch (fileErr) {
+      console.error('Error converting file to base64:', fileErr);
+      throw new Error(`Failed to process uploaded file: ${fileErr.message}`);
+    }
 
     // Create work log
     const workLogResult = await pool.query(
@@ -84,8 +92,12 @@ exports.submitWorkCompletion = async (req, res) => {
       work_log: workLogResult.rows[0],
     });
   } catch (error) {
-    console.error('Submit work error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error('Submit work error:', error.message);
+    console.error('Full error:', error);
+    res.status(500).json({
+      error: 'Internal server error',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 };
 
