@@ -1,0 +1,60 @@
+services:
+  - type: web
+    name: hvac-backend
+    runtime: node
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "5000"
+      - key: JWT_SECRET
+        sync: false
+      - key: DB_HOST
+        fromDatabase:
+          name: hvac-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: hvac-db
+          property: port
+      - key: DB_USER
+        fromDatabase:
+          name: hvac-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: hvac-db
+          property: password
+      - key: DB_NAME
+        fromDatabase:
+          name: hvac-db
+          property: database
+      - key: CORS_ORIGIN
+        value: https://your-frontend-url.onrender.com
+      - key: EMAIL_HOST
+        sync: false
+      - key: EMAIL_PORT
+        value: "587"
+      - key: EMAIL_USER
+        sync: false
+      - key: EMAIL_PASSWORD
+        sync: false
+      - key: EMAIL_FROM
+        value: noreply@hvacservice.com
+
+  - type: web
+    name: hvac-frontend
+    runtime: node
+    buildCommand: cd frontend && npm install && npm run build
+    startCommand: npm install -g serve && serve -s frontend/build -l 3000
+    envVars:
+      - key: REACT_APP_API_URL
+        value: https://your-backend-url.onrender.com/api
+
+databases:
+  - name: hvac-db
+    databaseName: hvac_db
+    user: hvac_user
+    plan: free

@@ -1,0 +1,49 @@
+hvac-app/
+├── backend/
+│   ├── server.js
+│   ├── package.json
+│   ├── .env.example
+│   ├── config/
+│   │   └── database.js
+│   ├── routes/
+│   │   ├── auth.js
+│   │   ├── tickets.js
+│   │   ├── technicians.js
+│   │   └── admin.js
+│   ├── controllers/
+│   │   ├── authController.js
+│   │   ├── ticketController.js
+│   │   ├── technicianController.js
+│   │   └── adminController.js
+│   ├── models/
+│   │   └── schema.sql
+│   ├── middleware/
+│   │   ├── authMiddleware.js
+│   │   └── uploadMiddleware.js
+│   └── utils/
+│       ├── emailService.js
+│       └── helpers.js
+├── frontend/
+│   ├── package.json
+│   ├── public/
+│   │   └── index.html
+│   └── src/
+│       ├── index.js
+│       ├── App.js
+│       ├── pages/
+│       │   ├── Login.js
+│       │   ├── Dashboard.js
+│       │   ├── TechnicianDashboard.js
+│       │   ├── AdminPanel.js
+│       │   └── TicketDetails.js
+│       ├── components/
+│       │   ├── TicketForm.js
+│       │   ├── TicketList.js
+│       │   ├── WorkLog.js
+│       │   └── PriceAssignment.js
+│       └── styles/
+│           └── index.css
+├── docker-compose.yml
+├── Dockerfile.backend
+├── Dockerfile.frontend
+└── README.md
