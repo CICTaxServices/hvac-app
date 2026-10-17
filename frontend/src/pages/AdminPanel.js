@@ -420,11 +420,11 @@ function AdminPanel({ user, onLogout }) {
                                 ))}
                               </select>
                             </td>
-                            <td>
+                            <td style={{ whiteSpace: 'nowrap' }}>
                               <button
                                 className="btn btn-primary"
                                 onClick={() => navigate(`/ticket/${ticket.id}`)}
-                                style={{ marginRight: '0.5rem' }}
+                                style={{ marginRight: '0.5rem', padding: '0.4rem 0.8rem', fontSize: '0.85rem' }}
                               >
                                 View
                               </button>
@@ -432,7 +432,7 @@ function AdminPanel({ user, onLogout }) {
                                 <button
                                   className="btn btn-success"
                                   onClick={() => setVerifyingTicket(ticket.id)}
-                                  style={{ marginRight: '0.5rem' }}
+                                  style={{ marginRight: '0.5rem', padding: '0.4rem 0.8rem', fontSize: '0.85rem' }}
                                 >
                                   Verify
                                 </button>
@@ -440,6 +440,7 @@ function AdminPanel({ user, onLogout }) {
                               <button
                                 className="btn btn-danger"
                                 onClick={() => handleDeleteTicket(ticket.id)}
+                                style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }}
                               >
                                 Delete
                               </button>
