@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS work_logs (
   parts_used TEXT,
   hours_worked DECIMAL(5, 2),
   serial_number VARCHAR(255) NOT NULL, -- Equipment serial number (mandatory)
-  serial_photo_path VARCHAR(255) NOT NULL, -- Photo of serial number (mandatory)
+  serial_photo_path TEXT NOT NULL, -- Photo of serial number as base64 (mandatory)
   completed_at TIMESTAMP NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

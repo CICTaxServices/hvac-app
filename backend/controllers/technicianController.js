@@ -1,4 +1,5 @@
 const pool = require('../config/database');
+const fs = require('fs');
 const { logActivity } = require('../utils/helpers');
 const { sendOwnerVerificationEmail } = require('../utils/emailService');
 
@@ -19,6 +20,16 @@ exports.submitWorkCompletion = async (req, res) => {
 
     const ticket = ticketResult.rows[0];
 
+    // Convert uploaded file to base64
+    const fileBuffer = fs.readFileSync(req.file.path);
+    const base64String = fileBuffer.toString('base64');
+
+    // Determine MIME type
+    const mimeType = req.file.mimetype || 'image/jpeg';
+
+    // Store as data URL: data:image/jpeg;base64,...
+    const photoDataUrl = `data:${mimeType};base64,${base64String}`;
+
     // Create work log
     const workLogResult = await pool.query(
       `INSERT INTO work_logs
@@ -32,9 +43,16 @@ exports.submitWorkCompletion = async (req, res) => {
         parts_used,
         hours_worked,
         serial_number,
-        req.file.path,
+        photoDataUrl,
       ]
     );
+
+    // Delete the temporary uploaded file
+    try {
+      fs.unlinkSync(req.file.path);
+    } catch (err) {
+      console.warn('Could not delete temporary file:', err.message);
+    }
 
     // Update ticket status to completed
     await pool.query(
