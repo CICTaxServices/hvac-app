@@ -12,6 +12,7 @@ router.post('/price-assignment', authorize(['admin']), adminController.assignPri
 router.get('/pending-verification', authorize(['admin']), adminController.getPendingVerification);
 router.get('/users', authorize(['admin']), adminController.getAllUsers);
 router.put('/users/:id/deactivate', authorize(['admin']), adminController.deactivateUser);
+router.put('/users/:id/activate', authorize(['admin']), adminController.activateUser);
 router.put('/users/:id', authorize(['admin']), adminController.updateUser);
 router.delete('/users/:id', authorize(['admin']), adminController.deleteUser);
 router.delete('/tickets/:id', authorize(['admin']), adminController.deleteTicket);

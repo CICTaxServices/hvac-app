@@ -96,11 +96,11 @@ exports.getPendingVerification = async (req, res) => {
   }
 };
 
-// Get all users (for admin panel)
+// Get all users (for admin panel) - returns both active and suspended
 exports.getAllUsers = async (req, res) => {
   try {
     const result = await pool.query(
-      'SELECT id, email, name, role, phone, is_active FROM users WHERE is_active = true ORDER BY created_at DESC'
+      'SELECT id, email, name, role, phone, is_active FROM users ORDER BY is_active DESC, created_at DESC'
     );
 
     res.json({ users: result.rows });
@@ -127,6 +127,27 @@ exports.deactivateUser = async (req, res) => {
     res.json({ message: 'User deactivated', user: result.rows[0] });
   } catch (error) {
     console.error('Deactivate user error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+// Activate user
+exports.activateUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const result = await pool.query(
+      'UPDATE users SET is_active = true, updated_at = NOW() WHERE id = $1 RETURNING *',
+      [id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json({ message: 'User activated', user: result.rows[0] });
+  } catch (error) {
+    console.error('Activate user error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };

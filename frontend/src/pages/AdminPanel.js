@@ -188,6 +188,21 @@ function AdminPanel({ user, onLogout }) {
     }
   };
 
+  const handleActivateUser = async (userId) => {
+    if (!window.confirm('Are you sure you want to reactivate this user?')) {
+      return;
+    }
+
+    try {
+      const headers = { Authorization: `Bearer ${token}` };
+      await axios.put(`${API_URL}/admin/users/${userId}/activate`, {}, { headers });
+
+      fetchData();
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to activate user');
+    }
+  };
+
   const handleUpdateBillingStatus = async (billingId, status, ticketId) => {
     try {
       const headers = { Authorization: `Bearer ${token}` };
@@ -849,6 +864,15 @@ function AdminPanel({ user, onLogout }) {
                                   style={{ marginRight: '0.25rem', padding: '0.4rem 0.6rem', fontSize: '0.85rem' }}
                                 >
                                   Suspend
+                                </button>
+                              )}
+                              {!u.is_active && (
+                                <button
+                                  className="btn btn-success"
+                                  onClick={() => handleActivateUser(u.id)}
+                                  style={{ marginRight: '0.25rem', padding: '0.4rem 0.6rem', fontSize: '0.85rem' }}
+                                >
+                                  Activate
                                 </button>
                               )}
                               <button
