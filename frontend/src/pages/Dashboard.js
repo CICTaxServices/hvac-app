@@ -19,8 +19,8 @@ function Dashboard({ user, onLogout }) {
 
     try {
       const headers = { Authorization: `Bearer ${token}` };
-      const response = await axios.get(`${API_URL}/admin/pending-verification`, { headers });
-      setBilling(response.data.tickets);
+      const response = await axios.get(`${API_URL}/admin/pending-invoices`, { headers });
+      setBilling(response.data.invoices);
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to fetch billing');
     } finally {
