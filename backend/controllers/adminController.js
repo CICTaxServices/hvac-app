@@ -257,7 +257,7 @@ exports.deleteTicket = async (req, res) => {
   }
 };
 
-// Get pending invoices (verified tickets awaiting billing)
+// Get all invoices (verified and invoiced tickets)
 exports.getPendingInvoices = async (req, res) => {
   try {
     const result = await pool.query(
@@ -269,9 +269,9 @@ exports.getPendingInvoices = async (req, res) => {
        FROM tickets t
        LEFT JOIN price_assignments pa ON t.id = pa.ticket_id
        LEFT JOIN billing b ON pa.id = b.price_assignment_id
-       WHERE t.status = $1
+       WHERE t.status IN ('verified', 'invoiced')
        ORDER BY t.id, b.created_at DESC`,
-      ['verified']
+      []
     );
 
     res.json({ invoices: result.rows });
