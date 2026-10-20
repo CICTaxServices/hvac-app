@@ -680,6 +680,11 @@ function AdminPanel({ user, onLogout }) {
                   const renderInvoiceCard = (invoice) => (
                     <div key={invoice.id} className="card" style={{ backgroundColor: '#f9fafb' }}>
                       <h3>{invoice.ticket_number}</h3>
+                      {invoice.invoice_number && (
+                        <p style={{ backgroundColor: '#fef3c7', padding: '0.5rem', borderRadius: '4px', marginBottom: '1rem' }}>
+                          <strong>Invoice #:</strong> <span style={{ fontSize: '1.1rem', fontWeight: 'bold' }}>{invoice.invoice_number}</span>
+                        </p>
+                      )}
                       <p>
                         <strong>Customer:</strong> {invoice.customer_name}
                       </p>
@@ -706,11 +711,6 @@ function AdminPanel({ user, onLogout }) {
                           {invoice.billing_status || 'pending'}
                         </span>
                       </p>
-                      {invoice.invoice_number && (
-                        <p>
-                          <strong>Invoice #:</strong> {invoice.invoice_number}
-                        </p>
-                      )}
                       {user.role === 'accounting' && (
                         <>
                           <div className="form-group">
