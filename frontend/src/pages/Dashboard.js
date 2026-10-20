@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 function Dashboard({ user, onLogout }) {
+  const navigate = useNavigate();
   const [billing, setBilling] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -103,6 +105,13 @@ function Dashboard({ user, onLogout }) {
                         {invoice.billing_status || 'pending'}
                       </span>
                     </p>
+                    <button
+                      className="btn btn-primary"
+                      onClick={() => navigate(`/ticket/${invoice.id}`)}
+                      style={{ marginBottom: '1rem', width: '100%' }}
+                    >
+                      View Details
+                    </button>
                     <div className="form-group">
                       <label>Invoice Number</label>
                       <input
