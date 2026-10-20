@@ -33,6 +33,9 @@ function Dashboard({ user, onLogout }) {
   };
 
   const handleUpdateBillingStatus = async (billingId, status, ticketId) => {
+    // Find the current invoice to preserve its invoice_number if already set
+    const currentInvoice = billing.find((inv) => inv.billing_id === billingId);
+
     try {
       const headers = { Authorization: `Bearer ${token}` };
       await axios.put(
@@ -40,7 +43,7 @@ function Dashboard({ user, onLogout }) {
         {
           billing_id: billingId,
           billing_status: status,
-          invoice_number: invoiceNumber[billingId] || null,
+          invoice_number: invoiceNumber[billingId] || currentInvoice?.invoice_number || null,
         },
         { headers }
       );
