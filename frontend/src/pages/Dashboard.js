@@ -75,6 +75,11 @@ function Dashboard({ user, onLogout }) {
   const renderInvoiceCard = (invoice) => (
     <div key={invoice.id} className="card" style={{ backgroundColor: '#f9fafb' }}>
       <h3>{invoice.ticket_number}</h3>
+      {invoice.invoice_number && (
+        <p style={{ backgroundColor: '#fef3c7', padding: '0.5rem', borderRadius: '4px', marginBottom: '1rem' }}>
+          <strong>Invoice #:</strong> <span style={{ fontSize: '1.1rem', fontWeight: 'bold' }}>{invoice.invoice_number}</span>
+        </p>
+      )}
       <p>
         <strong>Customer:</strong> {invoice.customer_name}
       </p>
@@ -120,7 +125,12 @@ function Dashboard({ user, onLogout }) {
               [invoice.billing_id]: e.target.value,
             })
           }
-          disabled={invoice.invoice_number ? true : false}
+          disabled={invoice.billing_status !== 'pending' ? true : false}
+          style={{
+            backgroundColor: invoice.billing_status !== 'pending' ? '#e5e7eb' : 'white',
+            color: invoice.billing_status !== 'pending' ? '#6b7280' : 'black',
+            cursor: invoice.billing_status !== 'pending' ? 'not-allowed' : 'auto'
+          }}
         />
       </div>
       <div style={{ display: 'flex', gap: '0.5rem' }}>
