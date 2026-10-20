@@ -706,6 +706,11 @@ function AdminPanel({ user, onLogout }) {
                           {invoice.billing_status || 'pending'}
                         </span>
                       </p>
+                      {invoice.invoice_number && (
+                        <p>
+                          <strong>Invoice #:</strong> {invoice.invoice_number}
+                        </p>
+                      )}
                       <div className="form-group">
                         <label>Invoice Number</label>
                         <input
@@ -719,6 +724,11 @@ function AdminPanel({ user, onLogout }) {
                             })
                           }
                           disabled={invoice.invoice_number ? true : false}
+                          style={{
+                            backgroundColor: invoice.invoice_number ? '#e5e7eb' : 'white',
+                            color: invoice.invoice_number ? '#6b7280' : 'black',
+                            cursor: invoice.invoice_number ? 'not-allowed' : 'auto'
+                          }}
                         />
                       </div>
                       <div style={{ display: 'flex', gap: '0.5rem' }}>
