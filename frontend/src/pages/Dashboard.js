@@ -72,6 +72,101 @@ function Dashboard({ user, onLogout }) {
     </div>
   );
 
+  const renderInvoiceCard = (invoice) => (
+    <div key={invoice.id} className="card" style={{ backgroundColor: '#f9fafb' }}>
+      <h3>{invoice.ticket_number}</h3>
+      <p>
+        <strong>Customer:</strong> {invoice.customer_name}
+      </p>
+      <p>
+        <strong>Address:</strong> {invoice.property_address}
+      </p>
+      <p>
+        <strong>Price:</strong> ${invoice.price ? parseFloat(invoice.price).toFixed(2) : 'N/A'}
+      </p>
+      <p>
+        <strong>Current Status:</strong>{' '}
+        <span
+          style={{
+            padding: '0.4rem 0.8rem',
+            borderRadius: '4px',
+            fontWeight: 'bold',
+            color: 'white',
+            backgroundColor:
+              invoice.billing_status === 'pending' ? '#f59e0b' :
+              invoice.billing_status === 'sent' ? '#3b82f6' :
+              invoice.billing_status === 'paid' ? '#10b981' : '#6b7280'
+          }}
+        >
+          {invoice.billing_status || 'pending'}
+        </span>
+      </p>
+      <button
+        className="btn btn-primary"
+        onClick={() => navigate(`/ticket/${invoice.id}`)}
+        style={{ marginBottom: '1rem', width: '100%' }}
+      >
+        View Details
+      </button>
+      <div className="form-group">
+        <label>Invoice Number</label>
+        <input
+          type="text"
+          placeholder="e.g., INV-2024-001"
+          value={invoiceNumber[invoice.billing_id] || invoice.invoice_number || ''}
+          onChange={(e) =>
+            setInvoiceNumber({
+              ...invoiceNumber,
+              [invoice.billing_id]: e.target.value,
+            })
+          }
+          disabled={invoice.invoice_number ? true : false}
+        />
+      </div>
+      <div style={{ display: 'flex', gap: '0.5rem' }}>
+        {invoice.billing_status === 'pending' && (
+          <button
+            className="btn btn-primary"
+            onClick={() =>
+              handleUpdateBillingStatus(
+                invoice.billing_id,
+                'sent',
+                invoice.id
+              )
+            }
+            style={{ flex: 1 }}
+          >
+            Mark Sent
+          </button>
+        )}
+        {invoice.billing_status === 'sent' && (
+          <button
+            className="btn btn-success"
+            onClick={() =>
+              handleUpdateBillingStatus(
+                invoice.billing_id,
+                'paid',
+                invoice.id
+              )
+            }
+            style={{ flex: 1 }}
+          >
+            Mark Paid
+          </button>
+        )}
+        {invoice.billing_status === 'paid' && (
+          <div style={{ flex: 1, padding: '0.5rem', textAlign: 'center', backgroundColor: '#d1fae5', borderRadius: '4px', fontWeight: 'bold', color: '#065f46' }}>
+            ✓ Paid
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  const pendingInvoices = billing.filter((inv) => inv.billing_status === 'pending');
+  const sentInvoices = billing.filter((inv) => inv.billing_status === 'sent');
+  const paidInvoices = billing.filter((inv) => inv.billing_status === 'paid');
+
   return (
     <div>
       <Header />
@@ -81,85 +176,39 @@ function Dashboard({ user, onLogout }) {
 
         {loading ? (
           <div className="spinner"></div>
-        ) : (
+        ) : billing.length === 0 ? (
           <div className="card">
-            <h2>Ready to Bill</h2>
-            {billing.length === 0 ? (
-              <p>No tickets ready for billing</p>
-            ) : (
-              <div className="grid grid-2">
-                {billing.map((invoice) => (
-                  <div key={invoice.id} className="card" style={{ backgroundColor: '#f9fafb' }}>
-                    <h3>{invoice.ticket_number}</h3>
-                    <p>
-                      <strong>Customer:</strong> {invoice.customer_name}
-                    </p>
-                    <p>
-                      <strong>Address:</strong> {invoice.property_address}
-                    </p>
-                    <p>
-                      <strong>Price:</strong> ${invoice.price ? parseFloat(invoice.price).toFixed(2) : 'N/A'}
-                    </p>
-                    <p>
-                      <strong>Current Status:</strong>{' '}
-                      <span className={`badge badge-${invoice.billing_status || 'pending'}`}>
-                        {invoice.billing_status || 'pending'}
-                      </span>
-                    </p>
-                    <button
-                      className="btn btn-primary"
-                      onClick={() => navigate(`/ticket/${invoice.id}`)}
-                      style={{ marginBottom: '1rem', width: '100%' }}
-                    >
-                      View Details
-                    </button>
-                    <div className="form-group">
-                      <label>Invoice Number</label>
-                      <input
-                        type="text"
-                        placeholder="e.g., INV-2024-001"
-                        value={invoiceNumber[invoice.billing_id] || ''}
-                        onChange={(e) =>
-                          setInvoiceNumber({
-                            ...invoiceNumber,
-                            [invoice.billing_id]: e.target.value,
-                          })
-                        }
-                      />
-                    </div>
-                    <div style={{ display: 'flex', gap: '0.5rem' }}>
-                      <button
-                        className="btn btn-primary"
-                        onClick={() =>
-                          handleUpdateBillingStatus(
-                            invoice.billing_id,
-                            'sent',
-                            invoice.id
-                          )
-                        }
-                        style={{ flex: 1 }}
-                      >
-                        Mark Sent
-                      </button>
-                      <button
-                        className="btn btn-success"
-                        onClick={() =>
-                          handleUpdateBillingStatus(
-                            invoice.billing_id,
-                            'paid',
-                            invoice.id
-                          )
-                        }
-                        style={{ flex: 1 }}
-                      >
-                        Mark Paid
-                      </button>
-                    </div>
-                  </div>
-                ))}
+            <p>No invoices to manage</p>
+          </div>
+        ) : (
+          <>
+            {pendingInvoices.length > 0 && (
+              <div className="card">
+                <h2>Ready to Bill</h2>
+                <div className="grid grid-2">
+                  {pendingInvoices.map(renderInvoiceCard)}
+                </div>
               </div>
             )}
-          </div>
+
+            {sentInvoices.length > 0 && (
+              <div className="card">
+                <h2>Invoiced (Awaiting Payment)</h2>
+                <div className="grid grid-2">
+                  {sentInvoices.map(renderInvoiceCard)}
+                </div>
+              </div>
+            )}
+
+            {paidInvoices.length > 0 && (
+              <div className="card">
+                <h2>Paid Invoices</h2>
+                <div className="grid grid-2">
+                  {paidInvoices.map(renderInvoiceCard)}
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
