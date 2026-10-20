@@ -38,6 +38,7 @@ function Dashboard({ user, onLogout }) {
       await axios.put(
         `${API_URL}/admin/billing/${billingId}/status`,
         {
+          billing_id: billingId,
           billing_status: status,
           invoice_number: invoiceNumber[billingId] || null,
         },
