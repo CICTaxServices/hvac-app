@@ -108,7 +108,7 @@ exports.getMyTickets = async (req, res) => {
       `SELECT t.*, w.id as work_log_id
        FROM tickets t
        LEFT JOIN work_logs w ON t.id = w.ticket_id
-       WHERE t.assigned_technician_id = $1
+       WHERE t.assigned_technician_id = $1 AND t.status = 'assigned'
        ORDER BY t.created_at DESC`,
       [req.user.id]
     );
