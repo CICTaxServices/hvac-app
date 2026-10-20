@@ -141,7 +141,7 @@ function TicketDetails({ user }) {
                   {ticket.price_assignments.map((price, idx) => (
                     <div key={idx}>
                       <p>
-                        <strong>Amount:</strong> ${price.price.toFixed(2)}
+                        <strong>Amount:</strong> ${parseFloat(price.price).toFixed(2)}
                       </p>
                       <p>
                         <strong>Notes:</strong> {price.notes}
@@ -164,7 +164,7 @@ function TicketDetails({ user }) {
                         <strong>Invoice #:</strong> {bill.invoice_number || 'Pending'}
                       </p>
                       <p>
-                        <strong>Amount:</strong> ${bill.amount.toFixed(2)}
+                        <strong>Amount:</strong> ${parseFloat(bill.amount).toFixed(2)}
                       </p>
                       <p>
                         <strong>Status:</strong>{' '}
