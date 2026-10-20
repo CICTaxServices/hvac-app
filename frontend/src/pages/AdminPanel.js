@@ -725,11 +725,11 @@ function AdminPanel({ user, onLogout }) {
                                   [invoice.billing_id]: e.target.value,
                                 })
                               }
-                              disabled={invoice.invoice_number ? true : false}
+                              disabled={invoice.billing_status !== 'pending' ? true : false}
                               style={{
-                                backgroundColor: invoice.invoice_number ? '#e5e7eb' : 'white',
-                                color: invoice.invoice_number ? '#6b7280' : 'black',
-                                cursor: invoice.invoice_number ? 'not-allowed' : 'auto'
+                                backgroundColor: invoice.billing_status !== 'pending' ? '#e5e7eb' : 'white',
+                                color: invoice.billing_status !== 'pending' ? '#6b7280' : 'black',
+                                cursor: invoice.billing_status !== 'pending' ? 'not-allowed' : 'auto'
                               }}
                             />
                           </div>
