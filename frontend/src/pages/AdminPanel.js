@@ -671,45 +671,58 @@ function AdminPanel({ user, onLogout }) {
 
             {/* Invoicing Tab */}
             {activeTab === 'invoicing' && (
-              <div className="card">
-                <h2>Pending Invoices</h2>
-                {pendingInvoices.length === 0 ? (
-                  <p>No verified tickets pending invoicing</p>
-                ) : (
-                  <div className="grid grid-2">
-                    {pendingInvoices.map((invoice) => (
-                      <div key={invoice.id} className="card" style={{ backgroundColor: '#f9fafb' }}>
-                        <h3>{invoice.ticket_number}</h3>
-                        <p>
-                          <strong>Customer:</strong> {invoice.customer_name}
-                        </p>
-                        <p>
-                          <strong>Address:</strong> {invoice.property_address}
-                        </p>
-                        <p>
-                          <strong>Price:</strong> ${invoice.price ? parseFloat(invoice.price).toFixed(2) : 'N/A'}
-                        </p>
-                        <p>
-                          <strong>Current Status:</strong>{' '}
-                          <span className={`badge badge-${invoice.billing_status || 'pending'}`}>
-                            {invoice.billing_status || 'pending'}
-                          </span>
-                        </p>
-                        <div className="form-group">
-                          <label>Invoice Number</label>
-                          <input
-                            type="text"
-                            placeholder="e.g., INV-2024-001"
-                            value={invoiceNumber[invoice.billing_id] || ''}
-                            onChange={(e) =>
-                              setInvoiceNumber({
-                                ...invoiceNumber,
-                                [invoice.billing_id]: e.target.value,
-                              })
-                            }
-                          />
-                        </div>
-                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <>
+                {(() => {
+                  const pendingInv = pendingInvoices.filter((inv) => inv.billing_status === 'pending');
+                  const sentInv = pendingInvoices.filter((inv) => inv.billing_status === 'sent');
+                  const paidInv = pendingInvoices.filter((inv) => inv.billing_status === 'paid');
+
+                  const renderInvoiceCard = (invoice) => (
+                    <div key={invoice.id} className="card" style={{ backgroundColor: '#f9fafb' }}>
+                      <h3>{invoice.ticket_number}</h3>
+                      <p>
+                        <strong>Customer:</strong> {invoice.customer_name}
+                      </p>
+                      <p>
+                        <strong>Address:</strong> {invoice.property_address}
+                      </p>
+                      <p>
+                        <strong>Price:</strong> ${invoice.price ? parseFloat(invoice.price).toFixed(2) : 'N/A'}
+                      </p>
+                      <p style={{ marginBottom: '1.5rem' }}>
+                        <strong>Current Status:</strong>{' '}
+                        <span
+                          style={{
+                            padding: '0.4rem 0.8rem',
+                            borderRadius: '4px',
+                            fontWeight: 'bold',
+                            color: 'white',
+                            backgroundColor:
+                              invoice.billing_status === 'pending' ? '#f59e0b' :
+                              invoice.billing_status === 'sent' ? '#3b82f6' :
+                              invoice.billing_status === 'paid' ? '#10b981' : '#6b7280'
+                          }}
+                        >
+                          {invoice.billing_status || 'pending'}
+                        </span>
+                      </p>
+                      <div className="form-group">
+                        <label>Invoice Number</label>
+                        <input
+                          type="text"
+                          placeholder="e.g., INV-2024-001"
+                          value={invoiceNumber[invoice.billing_id] || invoice.invoice_number || ''}
+                          onChange={(e) =>
+                            setInvoiceNumber({
+                              ...invoiceNumber,
+                              [invoice.billing_id]: e.target.value,
+                            })
+                          }
+                          disabled={invoice.invoice_number ? true : false}
+                        />
+                      </div>
+                      <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        {invoice.billing_status === 'pending' && (
                           <button
                             className="btn btn-primary"
                             onClick={() =>
@@ -723,6 +736,8 @@ function AdminPanel({ user, onLogout }) {
                           >
                             Mark Sent
                           </button>
+                        )}
+                        {invoice.billing_status === 'sent' && (
                           <button
                             className="btn btn-success"
                             onClick={() =>
@@ -736,12 +751,54 @@ function AdminPanel({ user, onLogout }) {
                           >
                             Mark Paid
                           </button>
-                        </div>
+                        )}
+                        {invoice.billing_status === 'paid' && (
+                          <div style={{ flex: 1, padding: '0.5rem', textAlign: 'center', backgroundColor: '#d1fae5', borderRadius: '4px', fontWeight: 'bold', color: '#065f46' }}>
+                            ✓ Paid
+                          </div>
+                        )}
                       </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+                    </div>
+                  );
+
+                  return (
+                    <>
+                      {pendingInv.length > 0 && (
+                        <div className="card">
+                          <h2>Ready to Bill</h2>
+                          <div className="grid grid-2">
+                            {pendingInv.map(renderInvoiceCard)}
+                          </div>
+                        </div>
+                      )}
+
+                      {sentInv.length > 0 && (
+                        <div className="card">
+                          <h2>Invoiced (Awaiting Payment)</h2>
+                          <div className="grid grid-2">
+                            {sentInv.map(renderInvoiceCard)}
+                          </div>
+                        </div>
+                      )}
+
+                      {paidInv.length > 0 && (
+                        <div className="card">
+                          <h2>Paid Invoices</h2>
+                          <div className="grid grid-2">
+                            {paidInv.map(renderInvoiceCard)}
+                          </div>
+                        </div>
+                      )}
+
+                      {pendingInv.length === 0 && sentInv.length === 0 && paidInv.length === 0 && (
+                        <div className="card">
+                          <p>No invoices to manage</p>
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
+              </>
             )}
 
             {/* Users Tab */}
