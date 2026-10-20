@@ -84,7 +84,7 @@ function Dashboard({ user, onLogout }) {
       <p>
         <strong>Price:</strong> ${invoice.price ? parseFloat(invoice.price).toFixed(2) : 'N/A'}
       </p>
-      <p>
+      <p style={{ marginBottom: '1.5rem' }}>
         <strong>Current Status:</strong>{' '}
         <span
           style={{
