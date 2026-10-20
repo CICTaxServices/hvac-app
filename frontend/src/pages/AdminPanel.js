@@ -687,7 +687,7 @@ function AdminPanel({ user, onLogout }) {
                           <strong>Address:</strong> {invoice.property_address}
                         </p>
                         <p>
-                          <strong>Price:</strong> ${invoice.price ? invoice.price.toFixed(2) : 'N/A'}
+                          <strong>Price:</strong> ${invoice.price ? parseFloat(invoice.price).toFixed(2) : 'N/A'}
                         </p>
                         <p>
                           <strong>Current Status:</strong>{' '}
