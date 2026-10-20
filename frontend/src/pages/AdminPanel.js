@@ -711,63 +711,67 @@ function AdminPanel({ user, onLogout }) {
                           <strong>Invoice #:</strong> {invoice.invoice_number}
                         </p>
                       )}
-                      <div className="form-group">
-                        <label>Invoice Number</label>
-                        <input
-                          type="text"
-                          placeholder="e.g., INV-2024-001"
-                          value={invoiceNumber[invoice.billing_id] || invoice.invoice_number || ''}
-                          onChange={(e) =>
-                            setInvoiceNumber({
-                              ...invoiceNumber,
-                              [invoice.billing_id]: e.target.value,
-                            })
-                          }
-                          disabled={invoice.invoice_number ? true : false}
-                          style={{
-                            backgroundColor: invoice.invoice_number ? '#e5e7eb' : 'white',
-                            color: invoice.invoice_number ? '#6b7280' : 'black',
-                            cursor: invoice.invoice_number ? 'not-allowed' : 'auto'
-                          }}
-                        />
-                      </div>
-                      <div style={{ display: 'flex', gap: '0.5rem' }}>
-                        {invoice.billing_status === 'pending' && (
-                          <button
-                            className="btn btn-primary"
-                            onClick={() =>
-                              handleUpdateBillingStatus(
-                                invoice.billing_id,
-                                'sent',
-                                invoice.id
-                              )
-                            }
-                            style={{ flex: 1 }}
-                          >
-                            Mark Sent
-                          </button>
-                        )}
-                        {invoice.billing_status === 'sent' && (
-                          <button
-                            className="btn btn-success"
-                            onClick={() =>
-                              handleUpdateBillingStatus(
-                                invoice.billing_id,
-                                'paid',
-                                invoice.id
-                              )
-                            }
-                            style={{ flex: 1 }}
-                          >
-                            Mark Paid
-                          </button>
-                        )}
-                        {invoice.billing_status === 'paid' && (
-                          <div style={{ flex: 1, padding: '0.5rem', textAlign: 'center', backgroundColor: '#d1fae5', borderRadius: '4px', fontWeight: 'bold', color: '#065f46' }}>
-                            ✓ Paid
+                      {user.role === 'accounting' && (
+                        <>
+                          <div className="form-group">
+                            <label>Invoice Number</label>
+                            <input
+                              type="text"
+                              placeholder="e.g., INV-2024-001"
+                              value={invoiceNumber[invoice.billing_id] || invoice.invoice_number || ''}
+                              onChange={(e) =>
+                                setInvoiceNumber({
+                                  ...invoiceNumber,
+                                  [invoice.billing_id]: e.target.value,
+                                })
+                              }
+                              disabled={invoice.invoice_number ? true : false}
+                              style={{
+                                backgroundColor: invoice.invoice_number ? '#e5e7eb' : 'white',
+                                color: invoice.invoice_number ? '#6b7280' : 'black',
+                                cursor: invoice.invoice_number ? 'not-allowed' : 'auto'
+                              }}
+                            />
                           </div>
-                        )}
-                      </div>
+                          <div style={{ display: 'flex', gap: '0.5rem' }}>
+                            {invoice.billing_status === 'pending' && (
+                              <button
+                                className="btn btn-primary"
+                                onClick={() =>
+                                  handleUpdateBillingStatus(
+                                    invoice.billing_id,
+                                    'sent',
+                                    invoice.id
+                                  )
+                                }
+                                style={{ flex: 1 }}
+                              >
+                                Mark Sent
+                              </button>
+                            )}
+                            {invoice.billing_status === 'sent' && (
+                              <button
+                                className="btn btn-success"
+                                onClick={() =>
+                                  handleUpdateBillingStatus(
+                                    invoice.billing_id,
+                                    'paid',
+                                    invoice.id
+                                  )
+                                }
+                                style={{ flex: 1 }}
+                              >
+                                Mark Paid
+                              </button>
+                            )}
+                            {invoice.billing_status === 'paid' && (
+                              <div style={{ flex: 1, padding: '0.5rem', textAlign: 'center', backgroundColor: '#d1fae5', borderRadius: '4px', fontWeight: 'bold', color: '#065f46' }}>
+                                ✓ Paid
+                              </div>
+                            )}
+                          </div>
+                        </>
+                      )}
                     </div>
                   );
 
