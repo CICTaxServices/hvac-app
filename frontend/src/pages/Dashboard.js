@@ -5,6 +5,8 @@ function Dashboard({ user, onLogout }) {
   const [billing, setBilling] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [billingStatus, setBillingStatus] = useState({});
+  const [invoiceNumber, setInvoiceNumber] = useState({});
 
   const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
   const token = localStorage.getItem('token');
@@ -25,6 +27,29 @@ function Dashboard({ user, onLogout }) {
       setError(err.response?.data?.error || 'Failed to fetch billing');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleUpdateBillingStatus = async (billingId, status, ticketId) => {
+    try {
+      const headers = { Authorization: `Bearer ${token}` };
+      await axios.put(
+        `${API_URL}/admin/billing/${billingId}/status`,
+        {
+          billing_status: status,
+          invoice_number: invoiceNumber[billingId] || null,
+        },
+        { headers }
+      );
+
+      setInvoiceNumber((prev) => ({
+        ...prev,
+        [billingId]: '',
+      }));
+
+      fetchBilling();
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to update billing status');
     }
   };
 
@@ -59,30 +84,70 @@ function Dashboard({ user, onLogout }) {
             {billing.length === 0 ? (
               <p>No tickets ready for billing</p>
             ) : (
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>Ticket #</th>
-                    <th>Customer</th>
-                    <th>Address</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {billing.map((ticket) => (
-                    <tr key={ticket.id}>
-                      <td>{ticket.ticket_number}</td>
-                      <td>{ticket.customer_name}</td>
-                      <td>{ticket.property_address}</td>
-                      <td>
-                        <span className={`badge badge-${ticket.status}`}>
-                          {ticket.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <div className="grid grid-2">
+                {billing.map((invoice) => (
+                  <div key={invoice.id} className="card" style={{ backgroundColor: '#f9fafb' }}>
+                    <h3>{invoice.ticket_number}</h3>
+                    <p>
+                      <strong>Customer:</strong> {invoice.customer_name}
+                    </p>
+                    <p>
+                      <strong>Address:</strong> {invoice.property_address}
+                    </p>
+                    <p>
+                      <strong>Price:</strong> ${invoice.price ? invoice.price.toFixed(2) : 'N/A'}
+                    </p>
+                    <p>
+                      <strong>Current Status:</strong>{' '}
+                      <span className={`badge badge-${invoice.billing_status || 'pending'}`}>
+                        {invoice.billing_status || 'pending'}
+                      </span>
+                    </p>
+                    <div className="form-group">
+                      <label>Invoice Number</label>
+                      <input
+                        type="text"
+                        placeholder="e.g., INV-2024-001"
+                        value={invoiceNumber[invoice.billing_id] || ''}
+                        onChange={(e) =>
+                          setInvoiceNumber({
+                            ...invoiceNumber,
+                            [invoice.billing_id]: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <button
+                        className="btn btn-primary"
+                        onClick={() =>
+                          handleUpdateBillingStatus(
+                            invoice.billing_id,
+                            'sent',
+                            invoice.id
+                          )
+                        }
+                        style={{ flex: 1 }}
+                      >
+                        Mark Sent
+                      </button>
+                      <button
+                        className="btn btn-success"
+                        onClick={() =>
+                          handleUpdateBillingStatus(
+                            invoice.billing_id,
+                            'paid',
+                            invoice.id
+                          )
+                        }
+                        style={{ flex: 1 }}
+                      >
+                        Mark Paid
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
         )}
