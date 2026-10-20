@@ -213,7 +213,7 @@ function TechnicianDashboard({ user, onLogout }) {
                         <p>
                           <strong>Service Type:</strong> {ticket.service_type}
                         </p>
-                        <p>
+                        <p style={{ marginBottom: '1.5rem' }}>
                           <strong>Status:</strong>{' '}
                           <span className={`badge badge-${ticket.status}`}>
                             {ticket.status}
