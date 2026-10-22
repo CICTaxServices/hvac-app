@@ -39,6 +39,7 @@ function AdminPanel({ user, onLogout }) {
   });
   const [editUser, setEditUser] = useState({
     name: '',
+    email: '',
     phone: '',
     role: '',
   });
@@ -925,7 +926,7 @@ function AdminPanel({ user, onLogout }) {
                                 className="btn btn-primary"
                                 onClick={() => {
                                   setEditingUser(u.id);
-                                  setEditUser({ name: u.name, phone: u.phone, role: u.role });
+                                  setEditUser({ name: u.name, email: u.email, phone: u.phone, role: u.role });
                                 }}
                                 style={{ marginRight: '0.25rem', padding: '0.4rem 0.6rem', fontSize: '0.85rem' }}
                               >
@@ -992,6 +993,14 @@ function AdminPanel({ user, onLogout }) {
                           type="text"
                           value={editUser.name}
                           onChange={(e) => setEditUser({ ...editUser, name: e.target.value })}
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label>Email</label>
+                        <input
+                          type="email"
+                          value={editUser.email}
+                          onChange={(e) => setEditUser({ ...editUser, email: e.target.value })}
                         />
                       </div>
                       <div className="form-group">
