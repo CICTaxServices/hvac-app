@@ -53,7 +53,7 @@ function TicketDetails({ user }) {
           ticket && (
             <>
               <div className="card">
-                <h2>{ticket.ticket.ticket_number}</h2>
+                <h2>Ticket Number: {ticket.ticket.ticket_number}</h2>
                 <div className="grid grid-2">
                   <div>
                     <p>

@@ -203,7 +203,7 @@ function TechnicianDashboard({ user, onLogout }) {
                   <div className="grid grid-2">
                     {tickets.map((ticket) => (
                       <div key={ticket.id} className="card">
-                        <h3>{ticket.ticket_number}</h3>
+                        <h3>Ticket Number: {ticket.ticket_number}</h3>
                         <p>
                           <strong>Customer:</strong> {ticket.customer_name}
                         </p>

@@ -77,7 +77,7 @@ function Dashboard({ user, onLogout }) {
 
   const renderInvoiceCard = (invoice) => (
     <div key={invoice.id} className="card" style={{ backgroundColor: '#f9fafb' }}>
-      <h3>{invoice.ticket_number}</h3>
+      <h3>Ticket Number: {invoice.ticket_number}</h3>
       {invoice.invoice_number && (
         <p style={{ backgroundColor: '#fef3c7', padding: '0.5rem', borderRadius: '4px', marginBottom: '1rem' }}>
           <strong>Invoice #:</strong> <span style={{ fontSize: '1.1rem', fontWeight: 'bold' }}>{invoice.invoice_number}</span>
