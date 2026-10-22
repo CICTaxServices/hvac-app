@@ -156,9 +156,9 @@ exports.activateUser = async (req, res) => {
 exports.updateUser = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, phone, role } = req.body;
+    const { name, email, phone, role } = req.body;
 
-    if (!name && !phone && !role) {
+    if (!name && !email && !phone && !role) {
       return res.status(400).json({ error: 'At least one field must be provided' });
     }
 
@@ -169,6 +169,10 @@ exports.updateUser = async (req, res) => {
     if (name) {
       updates.push('name = $' + (params.length + 1));
       params.push(name);
+    }
+    if (email) {
+      updates.push('email = $' + (params.length + 1));
+      params.push(email);
     }
     if (phone !== undefined) {
       updates.push('phone = $' + (params.length + 1));
