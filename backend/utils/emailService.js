@@ -1,20 +1,13 @@
-const nodemailer = require('nodemailer');
+const sgMail = require('@sendgrid/mail');
 
-const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST,
-  port: process.env.EMAIL_PORT,
-  secure: process.env.EMAIL_PORT === '465',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASSWORD,
-  },
-});
+// Initialize SendGrid with API key
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 const sendTechnicianAssignmentEmail = async (technician, ticket) => {
   try {
-    await transporter.sendMail({
-      from: process.env.EMAIL_FROM,
+    await sgMail.send({
       to: technician.email,
+      from: process.env.EMAIL_FROM,
       subject: `New Service Ticket Assigned: ${ticket.ticket_number}`,
       html: `
         <h2>New Service Assignment</h2>
@@ -38,9 +31,9 @@ const sendTechnicianAssignmentEmail = async (technician, ticket) => {
 
 const sendOwnerVerificationEmail = async (owner, ticket, workLog) => {
   try {
-    await transporter.sendMail({
-      from: process.env.EMAIL_FROM,
+    await sgMail.send({
       to: owner.email,
+      from: process.env.EMAIL_FROM,
       subject: `Work Completed - Verification Required: ${ticket.ticket_number}`,
       html: `
         <h2>Service Work Completed - Awaiting Verification</h2>
@@ -64,9 +57,9 @@ const sendOwnerVerificationEmail = async (owner, ticket, workLog) => {
 
 const sendBillingEmail = async (accountingEmail, ticket, billing) => {
   try {
-    await transporter.sendMail({
-      from: process.env.EMAIL_FROM,
+    await sgMail.send({
       to: accountingEmail,
+      from: process.env.EMAIL_FROM,
       subject: `Ticket Ready for Billing: ${ticket.ticket_number}`,
       html: `
         <h2>Ticket Ready for Billing</h2>
