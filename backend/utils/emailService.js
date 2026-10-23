@@ -67,7 +67,7 @@ const sendBillingEmail = async (accountingEmail, ticket, billing) => {
         <ul>
           <li><strong>Ticket #:</strong> ${ticket.ticket_number}</li>
           <li><strong>Customer:</strong> ${ticket.customer_name}</li>
-          <li><strong>Amount:</strong> $${billing.amount.toFixed(2)}</li>
+          <li><strong>Amount:</strong> $${parseFloat(billing.amount).toFixed(2)}</li>
         </ul>
         <p>Please log in to the accounting section to process the billing.</p>
       `,
