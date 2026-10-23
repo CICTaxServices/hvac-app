@@ -429,12 +429,13 @@ function AdminPanel({ user, onLogout }) {
                         />
                       </div>
                       <div className="form-group">
-                        <label>Service Type</label>
+                        <label>Service Type *</label>
                         <select
                           value={newTicket.service_type}
                           onChange={(e) =>
                             setNewTicket({ ...newTicket, service_type: e.target.value })
                           }
+                          required
                         >
                           <option value="">Select service type</option>
                           <option value="Emergency Repair">Emergency Repair</option>
@@ -487,19 +488,31 @@ function AdminPanel({ user, onLogout }) {
                               </span>
                             </td>
                             <td>
-                              <select
-                                value={assignedTech[ticket.id] || ''}
-                                onChange={(e) =>
-                                  handleAssignTechnician(ticket.id, e.target.value)
-                                }
-                              >
-                                <option value="">Assign technician...</option>
-                                {technicians.map((tech) => (
-                                  <option key={tech.id} value={tech.id}>
-                                    {tech.name}
-                                  </option>
-                                ))}
-                              </select>
+                              {ticket.status === 'pending' ? (
+                                <select
+                                  value={assignedTech[ticket.id] || ''}
+                                  onChange={(e) =>
+                                    handleAssignTechnician(ticket.id, e.target.value)
+                                  }
+                                >
+                                  <option value="">Assign technician...</option>
+                                  {technicians.map((tech) => (
+                                    <option key={tech.id} value={tech.id}>
+                                      {tech.name}
+                                    </option>
+                                  ))}
+                                </select>
+                              ) : (
+                                <span style={{
+                                  backgroundColor: '#e5e7eb',
+                                  padding: '0.5rem',
+                                  borderRadius: '4px',
+                                  color: '#6b7280',
+                                  fontWeight: '500'
+                                }}>
+                                  {technicians.find(t => t.id === ticket.assigned_technician_id)?.name || 'Unassigned'}
+                                </span>
+                              )}
                             </td>
                             <td style={{ whiteSpace: 'nowrap' }}>
                               <button

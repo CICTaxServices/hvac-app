@@ -8,6 +8,8 @@ function TicketDetails({ user }) {
   const [ticket, setTicket] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [verifyingTicket, setVerifyingTicket] = useState(false);
+  const [price, setPrice] = useState('');
 
   const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
   const token = localStorage.getItem('token');
@@ -28,6 +30,32 @@ function TicketDetails({ user }) {
       setError(err.response?.data?.error || 'Failed to fetch ticket details');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleAssignPrice = async () => {
+    if (!price) {
+      setError('Please enter a price');
+      return;
+    }
+
+    try {
+      const headers = { Authorization: `Bearer ${token}` };
+      await axios.post(
+        `${API_URL}/admin/price-assignment`,
+        {
+          ticket_id: ticket.ticket.id,
+          work_log_id: ticket.work_logs[0]?.id,
+          price: parseFloat(price),
+        },
+        { headers }
+      );
+
+      setPrice('');
+      setVerifyingTicket(false);
+      fetchTicketDetails();
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to assign price');
     }
   };
 
@@ -84,6 +112,15 @@ function TicketDetails({ user }) {
                 <p style={{ marginTop: '1rem' }}>
                   <strong>Description:</strong> {ticket.ticket.description}
                 </p>
+                {ticket.ticket.status === 'completed' && user?.role === 'admin' && (
+                  <button
+                    className="btn btn-success"
+                    onClick={() => setVerifyingTicket(true)}
+                    style={{ marginTop: '1rem' }}
+                  >
+                    Verify & Assign Price
+                  </button>
+                )}
               </div>
 
               {ticket.work_logs && ticket.work_logs.length > 0 && (
@@ -172,6 +209,74 @@ function TicketDetails({ user }) {
                       </p>
                     </div>
                   ))}
+                </div>
+              )}
+
+              {/* Verification Modal */}
+              {verifyingTicket && (
+                <div
+                  style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 1000,
+                  }}
+                  onClick={() => setVerifyingTicket(false)}
+                >
+                  <div
+                    className="card"
+                    style={{
+                      maxWidth: '500px',
+                      width: '90%',
+                      backgroundColor: 'white',
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <h2>Verify Work & Assign Price</h2>
+                    <p>
+                      <strong>Ticket:</strong> {ticket.ticket.ticket_number}
+                    </p>
+                    <p>
+                      <strong>Customer:</strong> {ticket.ticket.customer_name}
+                    </p>
+                    <div className="form-group">
+                      <label>Price *</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        placeholder="0.00"
+                        value={price}
+                        onChange={(e) => setPrice(e.target.value)}
+                        autoFocus
+                      />
+                    </div>
+                    <div
+                      style={{
+                        display: 'flex',
+                        gap: '0.5rem',
+                        justifyContent: 'flex-end',
+                      }}
+                    >
+                      <button
+                        className="btn btn-secondary"
+                        onClick={() => setVerifyingTicket(false)}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        className="btn btn-success"
+                        onClick={handleAssignPrice}
+                      >
+                        Verify & Assign Price
+                      </button>
+                    </div>
+                  </div>
                 </div>
               )}
             </>
