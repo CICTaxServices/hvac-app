@@ -78,8 +78,64 @@ const sendBillingEmail = async (accountingEmail, ticket, billing) => {
   }
 };
 
+const sendInvoiceSentEmail = async (adminEmail, ticket, invoiceNumber) => {
+  try {
+    await sgMail.send({
+      to: adminEmail,
+      from: process.env.EMAIL_FROM,
+      subject: `Invoice Sent: ${ticket.ticket_number}`,
+      html: `
+        <h2>Invoice Sent to Customer</h2>
+        <p>An invoice has been sent to the customer.</p>
+        <ul>
+          <li><strong>Ticket #:</strong> ${ticket.ticket_number}</li>
+          <li><strong>Customer:</strong> ${ticket.customer_name}</li>
+          <li><strong>Invoice #:</strong> ${invoiceNumber || 'N/A'}</li>
+          <li><strong>Status:</strong> Sent</li>
+        </ul>
+        <p>Please log in to the admin section to track payment status.</p>
+      `,
+    });
+    console.log('Invoice sent email notified to admin:', adminEmail);
+  } catch (error) {
+    console.error('Error sending invoice sent email:', error);
+  }
+};
+
+const sendInvoicePaidEmail = async (adminEmail, ticket, invoiceNumber) => {
+  try {
+    await sgMail.send({
+      to: adminEmail,
+      from: process.env.EMAIL_FROM,
+      subject: `Invoice Paid: ${ticket.ticket_number}`,
+      html: `
+        <h2>Invoice Marked as Paid</h2>
+        <p>An invoice has been marked as paid.</p>
+        <ul>
+          <li><strong>Ticket #:</strong> ${ticket.ticket_number}</li>
+          <li><strong>Customer:</strong> ${ticket.customer_name}</li>
+          <li><strong>Invoice #:</strong> ${invoiceNumber || 'N/A'}</li>
+          <li><strong>Status:</strong> Paid</li>
+        </ul>
+        <p>Payment has been received and recorded in the system.</p>
+      `,
+    });
+    console.log('Invoice paid email notified to admin:', adminEmail);
+  } catch (error) {
+    console.error('Error sending invoice paid email:', error);
+  }
+};
+
+// FUTURE FEATURE: Send email to customer/owner when invoice status changes
+// const sendInvoiceStatusToCustomerEmail = async (customerEmail, ticket, status, invoiceNumber) => { ... }
+
+// FUTURE FEATURE: Send owner verification email when tech completes work
+// const sendOwnerVerificationEmailToCustomer = async (customerEmail, ticket, workLog) => { ... }
+
 module.exports = {
   sendTechnicianAssignmentEmail,
   sendOwnerVerificationEmail,
   sendBillingEmail,
+  sendInvoiceSentEmail,
+  sendInvoicePaidEmail,
 };

@@ -1,6 +1,10 @@
 const pool = require('../config/database');
 const { logActivity } = require('../utils/helpers');
-const { sendBillingEmail } = require('../utils/emailService');
+const {
+  sendBillingEmail,
+  sendInvoiceSentEmail,
+  sendInvoicePaidEmail
+} = require('../utils/emailService');
 
 // Verify work and assign price
 exports.assignPrice = async (req, res) => {
@@ -307,6 +311,10 @@ exports.updateBillingStatus = async (req, res) => {
     const billing = billingResult.rows[0];
     const ticket_id = billing.ticket_id;
 
+    // Get ticket details
+    const ticketResult = await pool.query('SELECT * FROM tickets WHERE id = $1', [ticket_id]);
+    const ticket = ticketResult.rows[0];
+
     // Update billing status
     const updateData = [billing_status, invoice_number || null, billing_id];
     const updateBillingQuery = `
@@ -323,6 +331,24 @@ exports.updateBillingStatus = async (req, res) => {
         'UPDATE tickets SET status = $1, updated_at = NOW() WHERE id = $2',
         ['invoiced', ticket_id]
       );
+    }
+
+    // Send admin notification emails when invoice status changes
+    if (billing_status === 'sent' || billing_status === 'paid') {
+      // Get admin user email
+      const adminResult = await pool.query(
+        'SELECT email FROM users WHERE role = $1 LIMIT 1',
+        ['admin']
+      );
+
+      if (adminResult.rows.length > 0) {
+        const adminEmail = adminResult.rows[0].email;
+        if (billing_status === 'sent') {
+          await sendInvoiceSentEmail(adminEmail, ticket, invoice_number);
+        } else if (billing_status === 'paid') {
+          await sendInvoicePaidEmail(adminEmail, ticket, invoice_number);
+        }
+      }
     }
 
     // Log activity
