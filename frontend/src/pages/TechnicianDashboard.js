@@ -13,6 +13,7 @@ function TechnicianDashboard({ user, onLogout }) {
     serial_number: '',
   });
   const [photo, setPhoto] = useState(null);
+  const [photoPreview, setPhotoPreview] = useState(null);
 
   const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
   const token = localStorage.getItem('token');
@@ -70,6 +71,7 @@ function TechnicianDashboard({ user, onLogout }) {
         serial_number: '',
       });
       setPhoto(null);
+      setPhotoPreview(null);
       setSelectedTicket(null);
       fetchTickets();
     } catch (err) {
@@ -170,14 +172,43 @@ function TechnicianDashboard({ user, onLogout }) {
                   </div>
 
                   <div className="form-group">
-                    <label>Serial Number Photo * (MANDATORY)</label>
+                    <label>📷 Serial Number Photo * (MANDATORY)</label>
+                    <p style={{ fontSize: '0.9rem', color: '#6b7280', marginBottom: '0.5rem' }}>
+                      Tap to take a photo with your camera or select from gallery
+                    </p>
                     <input
                       type="file"
                       accept="image/*"
-                      onChange={(e) => setPhoto(e.target.files[0])}
+                      capture="environment"
+                      onChange={(e) => {
+                        const file = e.target.files[0];
+                        setPhoto(file);
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onloadend = () => {
+                            setPhotoPreview(reader.result);
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
                       required
+                      style={{ padding: '1rem', border: '2px dashed #3b82f6', borderRadius: '4px', cursor: 'pointer' }}
                     />
-                    {photo && <p style={{ marginTop: '0.5rem', color: '#10b981' }}>✓ Photo selected</p>}
+                    {photoPreview && (
+                      <div style={{ marginTop: '1rem' }}>
+                        <img
+                          src={photoPreview}
+                          alt="Photo preview"
+                          style={{
+                            maxWidth: '100%',
+                            maxHeight: '300px',
+                            borderRadius: '4px',
+                            border: '1px solid #ddd',
+                          }}
+                        />
+                        <p style={{ marginTop: '0.5rem', color: '#10b981', fontWeight: 'bold' }}>✓ Photo captured</p>
+                      </div>
+                    )}
                   </div>
 
                   <div style={{ display: 'flex', gap: '1rem' }}>
